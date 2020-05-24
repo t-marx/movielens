@@ -224,7 +224,7 @@ which shows a clear enhancement compared to the naive model. Yet, there is still
 
 ## User effect
 
-A similar approach can be followed regarding users, as some viewers tend to give consistently higher-than-average ratings. Though not as important as the left-one for movies, there appears to be a slight right skew effect for users.
+A similar approach can be followed regarding users, as some viewers tend to give consistently higher-than-average ratings. Though not as important as the left one for movies, there appears to be a slight right skew effect for users.
 
 ```{r b_j_graph, echo = FALSE, fig.align="center"}
 edx %>%
@@ -253,7 +253,7 @@ We observe that this user effect, while still enabling a significantly lower RMS
 
 ## Combined movie and user effect model
 
-We can now assess the impact on the RMSE of including both effects in the model. The idea of including a joint effect is that some viewers will rate poorly (below the average) most movies, including some blockbusters or acclaimed movies which would normally be rated highly.
+We can now assess the impact on the RMSE of including both effects in the model. The idea of including a joint effect is that some viewers will rate poorly (below the average) most movies, including some blockbusters or acclaimed movies which would normally be rated highly, and vice versa with above-average ratings.
 
 $$Y_{i, j} = \mu + b_{i} + b_{j} + \epsilon_{i, j}$$
 
@@ -268,16 +268,17 @@ As expected, the combined movie and user effect does bring an improvement over t
 
 ## Combined movie, user and age effect model
 
-As observed in the dataset analysis part, there is an inverted S-shaped relation between the averating rating of movies grouped by age at time of rating and their age. We can therefore add to your iterative model an age effect, reflecting the age of the movie at time of rating (zero when rated the same year as it was released):
+As observed in the dataset analysis part, there is an inverted S-shaped relation between the averating rating of movies grouped by age at time of rating and their age. We can therefore add to our iterative model an age effect, reflecting the age of the movie at time of rating (zero when rated the same year as it was released):
 
 $$Y_{i, j, k} = \mu + b_{i} + b_{j} + b_{k} + \epsilon_{i, j, k}$$
+
 We then obtain the following cumulative RMSE table:
 
 ```{r rmse_mvusage, echo = FALSE}
 kable(bind_rows(rmse_naive,rmse_movie_effect, rmse_user_effect, rmse_mvus_effect, rmse_mvusage_effect))
 ```
 
-We observe that incorporating this additional effect, while still lowering the RMSE, only has a marginal enhancement effect.
+We observe that incorporating this additional effect, while still lowering the RMSE, only brings a marginal enhancement.
 
 
 ## Combined movie, user, age and rating hour effect model
@@ -285,6 +286,7 @@ We observe that incorporating this additional effect, while still lowering the R
 We now incorporate a ultimate effect, related to the time of the day at time of rating. As discussed in the dataset analysis part, the idea is that the "viewing mood" will be different depending on whether the movie is rated during the night or in the early evening, with more critical viewers in the first case. The model now appears as:
 
 $$Y_{i, j, k, l} = \mu + b_{i} + b_{j} + b_{k} + b_{l} + \epsilon_{i, j, k, l}$$
+
 and the cumulative RMSE table now looks like this:
 
 ```{r rmse_mvusagehour, echo = FALSE}
@@ -297,7 +299,7 @@ The gain on the RMSE from an additional factor now becomes really marginal. We h
 
 ## Regularizing the four-effect model
 
-We now account for the different weights among the effects; some movies are very rarely rated, some users only rated a few movies, some movie ages are very infrequent and some rating hours are much less likely to occur than others. We thus write a function that takes different values of the regularizing factor and computes the respective RMSEs.
+We now account for the different weights among the effects; some movies are very rarely rated, some users only rated a few movies, some movie ages are very infrequent and some rating hours are much less likely to occur than others, this requiring a penaly term for these odd occurences. We thus write a function that takes different values of the regularizing factor and computes the respective RMSEs.
 
 ```
 lambdas <- seq(0, 10, 0.25)
@@ -361,20 +363,20 @@ We can now add the minimum value of these regularized RMSEs in our iterative tab
 kable(bind_rows(rmse_naive,rmse_movie_effect, rmse_user_effect, rmse_mvus_effect, rmse_mvusage_effect, rmse_mvusagehour_effect, rmse_mvusagehour_reg))
 ```
 
-According to the grading scale for the RMSE provided by EdX / HarvardX, we have now reached our objective of an RMSE lower than 0.86490.
+According to the grading scale for the RMSE provided by EdX/HarvardX, we have now reached our objective of an RMSE lower than 0.86490.
 
 \pagebreak
 
 # Conclusion and perspectives
 
-We have opted for constructing an iterative model, incorporating an increasing number of factors, rather than using various, distinct methods. The objective was to observe the marginal gain obtained by adding each additional factor. We saw that these gains mainly came from the movie and user effects, and that regularizing the complete, four-effect model enabled another significant gain, reaching our tarhet of an RMSE lower than 0.86490.  
+We have opted for constructing an iterative model, incorporating an increasing number of factors, rather than using various, distinct methods. The objective was to observe the marginal gain obtained by adding each additional factor. We saw that these gains mainly came from the movie and user effects, and that regularizing the complete, four-effect model enabled another significant gain, reaching our target of an RMSE lower than 0.86490.  
 
 We have deliberately opted not to use the movie categories vector, for various reasons:  
 
 1. It involves some treatment (separating the different genres, accounting for potential movies without genre, considering the hierarchy between the multiple genres of a movie) which may carry some subjectivity;  
 2. Each movie category may itself involve a subjecive dimension: some rather wide categories such as comedy, action or drama may refer to rather different actual types of movies;  
 3. These categories may also depend on the eye of the person responsible for assigning categories: a comedy movie for an appraiser may be rather considered as a romance one for another, and as both for a third one;  
-4. There may be some colinearity among genres: Toy Story" is registered under five different categories, but the sole "Animation" one may be considered as sufficient to correctly label the movie genre;   
+4. There may be some colinearity among genres: "Toy Story" is registered under five different categories, but the sole "Animation" one may be considered as sufficient to correctly label the movie genre;   
 5. These movie categories may also not be stable throughout time: a movie of the 1950s **today** labelled as drama may not necessarily have been considered as such at that time.
 
 Obviously, adding this effect in our model could further improve the RMSE, but as discussed, we felt that the methodological uncertainties outweighed the potential RMSE gain, considering we had already reached our quantitative
